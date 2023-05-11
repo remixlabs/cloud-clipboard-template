@@ -1,7 +1,7 @@
 name = "cloud_clipboard"
 main = "src/index.ts"
 compatibility_date = "2023-04-05"
-account_id = "f8d95d357dbc60ff2d8ecf9bc3717f62"
+account_id = "73541219a0f68b742cfa06260a4b840a"
 
 [env.dev]
 name = "cloud_clipboard_dev"
