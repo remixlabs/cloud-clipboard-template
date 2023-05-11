@@ -32,7 +32,7 @@ jobs:
       - name: Publish Cloud Clipboard Cloudflare Worker
         uses: jacobtomlinson/gha-find-replace@v2
         with:
-          find: "^password.*"
+          find: "^account_id.*"
           replace: ${{ format('account_id = {0}', secrets.CF_ACCOUNT_ID) }}
           regex: true
           include: "cloud_clipboard/wrangler.toml"
