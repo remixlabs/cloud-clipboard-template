@@ -30,7 +30,13 @@ jobs:
         run: ./create-database.sh
 
       - name: Publish Cloud Clipboard Cloudflare Worker
-        uses: cloudflare/wrangler-action@2.0.0
+        uses: jacobtomlinson/gha-find-replace@v2
+        with:
+          find: "^password.*"
+          replace: ${{ format('account_id = {0}', secrets.CF_ACCOUNT_ID) }}
+          regex: true
+          include: "cloud_clipboard/wrangler.toml"
+      - uses: cloudflare/wrangler-action@2.0.0
         with:
           apiToken: ${{ secrets.CF_API_TOKEN }}
           workingDirectory: "cloud_clipboard"
