@@ -25,5 +25,6 @@ jobs:
           DB_NAME: ${{ secrets.PSCALE_DB_NAME }}
         working-directory: ${{env.pscale_base_directory}}/cli-helper-scripts/
         run: ./create-database.sh
-      - name: Test
-        run: echo "${{ env.TESTING }}"
+      - run: echo "${{ env.PSCALE_HOST }}"
+      - run: echo "${{ env.PSCALE_USER }}"
+      - run: echo "${{ env.PSCALE_PASS }}"
