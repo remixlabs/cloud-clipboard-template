@@ -32,9 +32,9 @@ jobs:
       - name: Publish Cloud Clipboard Cloudflare Worker
         uses: jacobtomlinson/gha-find-replace@v2
         with:
-          find: "^account_id\\s*=\\s*\"\""
+          find: 'account_id = ""'
           replace: ${{ format('account_id = "{0}"', secrets.CF_ACCOUNT_ID) }}
-          regex: true
+          regex: false
           include: "cloud_clipboard/wrangler.toml"
       - uses: cloudflare/wrangler-action@2.0.0
         with:
