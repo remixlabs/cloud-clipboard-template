@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - ci-planetscale
+      - dispatch-improvements
 
 env:
   pscale_base_directory: .pscale
