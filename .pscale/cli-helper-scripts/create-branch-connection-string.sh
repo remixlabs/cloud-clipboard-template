@@ -36,7 +36,7 @@ function create-branch-connection-string {
     local DB_USERNAME=`echo "$raw_output" |  jq -r ". | .username`
     echo "PASSWORD INFO: $raw_output"
     # echo "TESTING=$raw_output" >> $TESTING
-    echo "TESTING=$DB_USERNAME" >> "$GITHUB_ENV"
+    echo "TESTING=$raw_output.username" >> "$GITHUB_ENV"
     local GENERAL_CONNECTION_STRING=`echo "$raw_output" |  jq -r ". | .connection_strings.general"`
 
 read -r -d '' SECRET_TEXT <<EOF
