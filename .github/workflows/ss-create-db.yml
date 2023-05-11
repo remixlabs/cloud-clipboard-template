@@ -1,0 +1,29 @@
+name: 1. Create Database
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - ci-planetscale
+
+env:
+  pscale_base_directory: .pscale
+
+jobs:
+  db-worker:
+    name: "Create Database and Deploy Worker - CLICK HERE"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2
+
+      - name: Create database - please click on displayed link to authenticate
+        timeout-minutes: 20
+        env:
+          ORG_NAME: ${{ secrets.PSCALE_ORG_NAME }}
+          DB_NAME: ${{ secrets.PSCALE_DB_NAME }}
+        working-directory: ${{env.pscale_base_directory}}/cli-helper-scripts/
+        run: ./create-database.sh
+      - name: Test
+        run: echo "${{ env.TESTING }}"

@@ -1,0 +1,3 @@
+PSCALE_HOST=aws.connect.psdb.cloud
+PSCALE_USER=abcdefghijklmnop
+PSCALE_PASS=pscale_pw_abcdefghijklmnop

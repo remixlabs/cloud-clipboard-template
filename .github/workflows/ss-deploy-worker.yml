@@ -1,0 +1,35 @@
+name: 2. Deploy Worker
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - ci-planetscale
+
+env:
+  pscale_base_directory: .pscale
+
+jobs:
+  deploy-worker:
+    runs-on: ubuntu-latest
+    name: Deploy Worker
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          cache: "npm"
+      - run: npm install
+
+      - name: Publish Cloud Clipboard Cloudflare Worker
+        uses: cloudflare/wrangler-action@2.0.0
+        with:
+          apiToken: ${{ secrets.CF_API_TOKEN }}
+          workingDirectory: "cloud_clipboard"
+          secrets: |
+            PSCALE_HOST
+            PSCALE_USER
+            PSCALE_PASS
+        env:
+          PSCALE_HOST: ${{ secrets.PSCALE_HOST }}
+          PSCALE_USER: ${{ secrets.PSCALE_USER }}
+          PSCALE_PASS: ${{ secrets.PSCALE_PASS }}
