@@ -1,4 +1,4 @@
-name: 1. Create Database
+name: Create Database and Deploy Worker
 
 on:
   workflow_dispatch:
@@ -28,3 +28,25 @@ jobs:
       - run: echo "${{ env.PSCALE_HOST }}"
       - run: echo "${{ env.PSCALE_USER }}"
       - run: echo "${{ env.PSCALE_PASS }}"
+
+      - name: Deploy Worker
+      steps:
+        - uses: actions/checkout@v3
+        - uses: actions/setup-node@v3
+          with:
+            cache: "npm"
+        - run: npm install
+
+        - name: Publish Cloud Clipboard Cloudflare Worker
+          uses: cloudflare/wrangler-action@2.0.0
+          with:
+            apiToken: ${{ secrets.CF_API_TOKEN }}
+            workingDirectory: "cloud_clipboard"
+            secrets: |
+              PSCALE_HOST
+              PSCALE_USER
+              PSCALE_PASS
+          env:
+            PSCALE_HOST: ${{ env.PSCALE_HOST }}
+            PSCALE_USER: ${{ env.PSCALE_USER }}
+            PSCALE_PASS: ${{ env.PSCALE_PASS }}
