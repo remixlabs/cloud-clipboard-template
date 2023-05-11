@@ -4,8 +4,8 @@
   "version": "1.0.0",
   "description": "Cloudflare workers to manage access and provide read/write to PlanetScale databases holding clipboard tables",
   "scripts": {
-    "dev-cloud-clipboard": "wrangler dev cloud_clipboard/src/index --env dev",
-    "dev-publish-cloud-clipboard": "wrangler publish cloud_clipboard/src/index --env dev && wrangler secret:bulk cloud_clipboard/dev-config.json --name cloud_clipboard_dev"
+    "dev": "wrangler dev cloud_clipboard/src/index --env dev",
+    "dev-publish": "wrangler publish cloud_clipboard/src/index --env dev && wrangler secret:bulk cloud_clipboard/dev-config.json --name cloud_clipboard_dev"
   },
   "devDependencies": {
     "@cloudflare/workers-types": "^4.20230404.0",
