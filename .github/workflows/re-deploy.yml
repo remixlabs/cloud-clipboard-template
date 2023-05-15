@@ -1,7 +1,9 @@
 name: Create Database and Deploy Worker
 
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main
 
 env:
   pscale_base_directory: .pscale
