@@ -2,6 +2,23 @@ name: Create Database and Deploy Worker
 
 on:
   workflow_dispatch:
+    inputs:
+      service_name:
+        description: "name of PlanetScale database and Cloudflare worker"
+        default: ""
+        required: true
+      pscale_org:
+        description: "PlanetScale organization to add database within"
+        default: ""
+        required: true
+      cf_account_id:
+        description: "Cloudflare account ID"
+        default: ""
+        required: true
+      cf_api_token:
+        description: "Cloudflare API token (using 'Edit Workers' template)"
+        default: ""
+        required: true
 
 env:
   pscale_base_directory: .pscale
