@@ -21,8 +21,8 @@ jobs:
       - name: Create database - please click on displayed link to authenticate
         timeout-minutes: 20
         env:
-          ORG_NAME: ${{ secrets.PSCALE_ORG }}
-          DB_NAME: ${{ secrets.SERVICE_NAME }}
+          ORG_NAME: ${{ github.event.inputs.pscale_org }}
+          DB_NAME: ${{ github.event.inputs.service_name }}
         working-directory: ${{env.pscale_base_directory}}/cli-helper-scripts/
         run: ./create-database.sh
 
@@ -30,18 +30,18 @@ jobs:
         uses: jacobtomlinson/gha-find-replace@v2
         with:
           find: 'account_id = ""'
-          replace: ${{ format('account_id = "{0}"', secrets.CF_ACCOUNT_ID) }}
+          replace: ${{ format('account_id = "{0}"', github.event.inputs.cf_account_id) }}
           regex: false
           include: "cloud_clipboard/wrangler.toml"
       - uses: jacobtomlinson/gha-find-replace@v2
         with:
           find: 'name = "cloud_clipboard"'
-          replace: ${{ format('name = "{0}"', secrets.SERVICE_NAME) }}
+          replace: ${{ format('name = "{0}"', github.event.inputs.service_name) }}
           regex: false
           include: "cloud_clipboard/wrangler.toml"
       - uses: cloudflare/wrangler-action@2.0.0
         with:
-          apiToken: ${{ secrets.CF_API_TOKEN }}
+          apiToken: ${{ github.event.inputs.cf_api_token }}
           workingDirectory: "cloud_clipboard"
           secrets: |
             PSCALE_HOST
