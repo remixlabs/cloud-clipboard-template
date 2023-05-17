@@ -27,7 +27,7 @@ if [ "$BRANCH_NAME" != "main" ]; then
   fi
 fi
 
-wait_for_branch_readiness 10 "$DB_NAME" "$BRANCH_NAME" "$ORG_NAME" 30
+wait_for_branch_readiness 20 "$DB_NAME" "$BRANCH_NAME" "$ORG_NAME" 30
 echo "CREATE TABLE buckets (bucket_id varchar(64) NOT NULL, user_id varchar(255) NOT NULL, created_at timestamp NULL DEFAULT current_timestamp(), PRIMARY KEY (bucket_id))" | pscale shell $DB_NAME $BRANCH_NAME --org $ORG_NAME
 # check whether table creation was successful
 if [ $? -ne 0 ]; then
@@ -35,7 +35,6 @@ if [ $? -ne 0 ]; then
   exit 1
 fi
 
-wait_for_branch_readiness 10 "$DB_NAME" "$BRANCH_NAME" "$ORG_NAME" 30
 echo "CREATE TABLE records (id int NOT NULL AUTO_INCREMENT, bucket_id varchar(64) NOT NULL, record_id varchar(64) NOT NULL, user_id varchar(255), contents mediumblob, created_at timestamp NULL DEFAULT current_timestamp(), PRIMARY KEY (id), KEY bucketid (bucket_id), KEY id_bucket_id (id, bucket_id))" | pscale shell $DB_NAME $BRANCH_NAME --org $ORG_NAME
 # check whether table creation was successful
 if [ $? -ne 0 ]; then
