@@ -49,8 +49,9 @@ async function fetchRemixUser(authkey: string): Promise<string> {
 app.post('/create', async (c) => {
   const email_id = await fetchRemixUser(c.req.headers.get('Authorization')!);
   const conn = await connectDatabase(c.env);
-  const q = await conn.execute('SELECT * FROM buckets WHERE user_id = ?', [email_id]);
-  if (q.rows.length >= c.env.BUCKET_LIMIT) {
+  const counts = await conn.execute('SELECT count(*) as cnt FROM buckets WHERE user_id = ?', [email_id]);
+  const n = Number(counts.rows[0].cnt);
+  if (n >= c.env.BUCKET_LIMIT) {
     return c.text('Too many buckets', 403);
   }
   const bucket_id = crypto.randomUUID();
@@ -66,7 +67,7 @@ app.post('/write/:bucketid', async (c) => {
     return c.text('Contents not found', 400);
   }
   const counts = await conn.execute('SELECT count(*) as cnt FROM buckets WHERE bucket_id = ?', [bucket_id]);
-  const n = counts.rows[0].cnt;
+  const n = Number(counts.rows[0].cnt);
   if (n >= c.env.BUCKET_RECORD_LIMIT) {
     return c.text('Bucket Full', 403);
   }
