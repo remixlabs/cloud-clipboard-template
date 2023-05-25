@@ -5,8 +5,6 @@ interface Bindings {
   PSCALE_HOST: string;
   PSCALE_USER: string;
   PSCALE_PASS: string;
-  BUCKET_LIMIT: number;
-  BUCKET_RECORD_LIMIT: number;
 }
 
 interface RemixUser {
@@ -49,11 +47,6 @@ async function fetchRemixUser(authkey: string): Promise<string> {
 app.post('/create', async (c) => {
   const email_id = await fetchRemixUser(c.req.headers.get('Authorization')!);
   const conn = await connectDatabase(c.env);
-  const counts = await conn.execute('SELECT count(*) as cnt FROM buckets WHERE user_id = ?', [email_id]);
-  const n = Number(counts.rows[0].cnt);
-  if (n >= c.env.BUCKET_LIMIT) {
-    return c.text('Too many buckets', 403);
-  }
   const bucket_id = crypto.randomUUID();
   await conn.execute('INSERT INTO buckets (user_id, bucket_id) VALUES (?,?)', [email_id, bucket_id]);
   return c.json({ success: true, message: 'Bucket created', data: {"bucket_id": bucket_id }}, 201);
@@ -65,11 +58,6 @@ app.post('/write/:bucketid', async (c) => {
   const body = await c.req.json();
   if (!body.records) {
     return c.text('Contents not found', 400);
-  }
-  const counts = await conn.execute('SELECT count(*) as cnt FROM buckets WHERE bucket_id = ?', [bucket_id]);
-  const n = Number(counts.rows[0].cnt);
-  if (n >= c.env.BUCKET_RECORD_LIMIT) {
-    return c.text('Bucket Full', 403);
   }
   let record_ids = [];
   for (const record of body.records) {
