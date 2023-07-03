@@ -17,6 +17,12 @@ interface Config {
   password: string;
 }
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "https://remix.app",
+  "Access-Control-Allow-Methods": "GET,PUT,HEAD,POST,OPTIONS",
+  "Access-Control-Max-Age": "86400"
+};
+
 export const app = new Hono<{ Bindings: Bindings }>();
 
 export async function connectDatabase(env: Bindings): Promise<Connection> {
@@ -49,7 +55,7 @@ app.post('/create', async (c) => {
   const conn = await connectDatabase(c.env);
   const bucket_id = crypto.randomUUID();
   await conn.execute('INSERT INTO buckets (user_id, bucket_id) VALUES (?,?)', [email_id, bucket_id]);
-  return c.json({ success: true, message: 'Bucket created', data: {"bucket_id": bucket_id }}, 201);
+  return c.json({ success: true, message: 'Bucket created', data: {"bucket_id": bucket_id }}, 201, CORS_HEADERS);
 });
 
 app.post('/write/:bucketid', async (c) => {
@@ -57,7 +63,7 @@ app.post('/write/:bucketid', async (c) => {
   const bucket_id = c.req.param('bucketid');
   const body = await c.req.json();
   if (!body.records) {
-    return c.text('Contents not found', 400);
+    return c.text('Contents not found', 400, CORS_HEADERS);
   }
   let record_ids = [];
   for (const record of body.records) {
@@ -65,7 +71,7 @@ app.post('/write/:bucketid', async (c) => {
     await conn.execute('INSERT INTO records (bucket_id, record_id, user_id, contents) VALUES (?, ?, ?, ?)', [bucket_id, record_id, body.user, record.contents]);
     record_ids.push(record_id);
   }
-  return c.json({success: true, message: `Record(s) written to bucket`, data: {record_ids: record_ids}}, 201);
+  return c.json({success: true, message: `Record(s) written to bucket`, data: {record_ids: record_ids}}, 201, CORS_HEADERS);
 });
 
 app.get('/read_bucket/:bucketid', async (c) => {
@@ -82,14 +88,14 @@ app.get('/read_bucket/:bucketid', async (c) => {
                         : [bucket_id];
 
   const r = await conn.execute('SELECT * FROM records WHERE bucket_id = ? ' + filter_user_predicate + ' ORDER BY bucket_id', query_params);
-  return c.json({success: true, message: `Found ${r.rows.length} record(s) in bucket`, data: r.rows}, 200);
+  return c.json({success: true, message: `Found ${r.rows.length} record(s) in bucket`, data: r.rows}, 200, CORS_HEADERS);
 });
 
 app.get('/read_bucket_count/:bucketid', async (c) => {
   const conn = await connectDatabase(c.env);
   const bucket_id = c.req.param('bucketid');
   const r = await conn.execute('SELECT COUNT(*) as record_count FROM records WHERE bucket_id = ?', [bucket_id]);
-  return c.json({success: true, message: `Found ${r.rows[0].record_count} record(s) in bucket`, data: {record_count: r.rows[0].record_count}}, 200);
+  return c.json({success: true, message: `Found ${r.rows[0].record_count} record(s) in bucket`, data: {record_count: r.rows[0].record_count}}, 200, CORS_HEADERS);
 });
 
 app.get('/read_record/:bucketid', async (c) => {
@@ -97,7 +103,7 @@ app.get('/read_record/:bucketid', async (c) => {
   const bucket_id = c.req.param('bucketid');
   const record_id = c.req.query('record_id');
   const r = await conn.execute('SELECT * FROM records WHERE bucket_id = ? AND record_id = ? ORDER BY created_at DESC LIMIT 1', [bucket_id, record_id]);
-  return c.json({success: true, message: `Found ${r.rows.length} record(s)`, data: r.rows}, 200);
+  return c.json({success: true, message: `Found ${r.rows.length} record(s)`, data: r.rows}, 200, CORS_HEADERS);
 });
 
 app.get('/read_records_from_id/:bucketid', async (c) => {
@@ -105,7 +111,7 @@ app.get('/read_records_from_id/:bucketid', async (c) => {
   const bucket_id = c.req.param('bucketid');
   const id = await c.req.query('id');
   const r = await conn.execute('SELECT * FROM records WHERE bucket_id = ? AND id > ?', [bucket_id, id]);
-  return c.json({success: true, message: `Found ${r.rows.length} record(s)`, data: r.rows}, 200);
+  return c.json({success: true, message: `Found ${r.rows.length} record(s)`, data: r.rows}, 200, CORS_HEADERS);
 });
 
 app.delete('/delete_buckets', async (c) => {
@@ -115,7 +121,7 @@ app.delete('/delete_buckets', async (c) => {
     await tx.execute('DELETE FROM records WHERE bucket_id IN (?)', [body.bucket_ids]);
     await tx.execute('DELETE FROM buckets WHERE bucket_id IN (?)', [body.bucket_ids]);
   })
-  return c.json({success: true, message: 'Bucket(s) deleted', data: {}}, 200);
+  return c.json({success: true, message: 'Bucket(s) deleted', data: {}}, 200, CORS_HEADERS);
 });
 
 app.delete('/delete_buckets_except', async (c) => {
@@ -123,13 +129,13 @@ app.delete('/delete_buckets_except', async (c) => {
   const body = await c.req.json();
   const user_id = c.req.query('user_id');
   if (user_id == '') {
-    return c.text('User not found', 400);
+    return c.text('User not found', 400, CORS_HEADERS);
   }
   await conn.transaction(async (tx) => {
     await tx.execute('DELETE FROM records WHERE bucket_id NOT IN (?) AND user_id = ?', [body.bucket_ids, user_id]);
     await tx.execute('DELETE FROM buckets WHERE bucket_id NOT IN (?) AND user_id = ?', [body.bucket_ids, user_id]);
   })
-  return c.json({success: true, message: 'Bucket(s) deleted', data: {}}, 200);
+  return c.json({success: true, message: 'Bucket(s) deleted', data: {}}, 200, CORS_HEADERS);
 });
 
 app.delete('/delete_records/:bucketid', async (c) => {
@@ -137,12 +143,45 @@ app.delete('/delete_records/:bucketid', async (c) => {
   const bucket_id = c.req.param('bucketid');
   const body = await c.req.json();
   await conn.execute('DELETE FROM records WHERE bucket_id = ? and record_id IN (?)', [bucket_id, body.record_ids]);
-  return c.json({success: true, message: 'Record(s) deleted', data: {}}, 200);
+  return c.json({success: true, message: 'Record(s) deleted', data: {}}, 200, CORS_HEADERS);
 });
+
+async function handleOptions(request) {
+  if (
+    request.headers.get("Origin") !== null &&
+    request.headers.get("Access-Control-Request-Method") !== null &&
+    request.headers.get("Access-Control-Request-Headers") !== null
+  ) {
+    // Handle CORS preflight requests.
+    return new Response(null, {
+      headers: {
+        ...CORS_HEADERS,
+        "Access-Control-Allow-Headers": request.headers.get(
+          "Access-Control-Request-Headers"
+        ),
+      },
+    });
+  } else {
+    // Handle standard OPTIONS request.
+    return new Response(null, {
+      headers: {
+        Allow: "GET, PUT, HEAD, POST, OPTIONS",
+      },
+    });
+  }
+}
+
+app.options('*', async (c, next) => {
+  if (c.req.method === "OPTIONS") {
+    // Handle CORS preflight requests
+    return handleOptions(c.req);
+  }
+  await next()
+})
 
 app.onError((err, c) => {
   console.error(err.message)
-  return c.text(err.message, 500)
+  return c.text(err.message, 500, CORS_HEADERS)
 });
 
 export default app;
